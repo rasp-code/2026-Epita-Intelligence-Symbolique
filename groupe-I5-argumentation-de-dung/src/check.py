@@ -21,6 +21,16 @@ Stable        : conflict-free ∧ S⁺ = Args \\ S.
 import networkx as nx
 
 
+
+def is_complete(graph: nx.DiGraph, extension: set) -> bool:
+    """
+    Return True iff `extension` is a complete extension of `graph`.
+    """
+    S = frozenset(extension)
+    if not _is_admissible(graph, S):
+        return False
+    return _characteristic_function(graph, S) == S
+
 # ---------------------------------------------------------------------------
 # Shared AF helpers
 # ---------------------------------------------------------------------------

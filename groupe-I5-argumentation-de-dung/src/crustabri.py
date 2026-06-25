@@ -65,7 +65,7 @@ import networkx as nx
 def _load_lib() -> ctypes.CDLL:
     """Charge libcrustabri_ipafair.dylib depuis le même répertoire que ce script."""
     script_dir = pathlib.Path(__file__).parent.resolve()
-    lib_path = script_dir / "bin" / "libcrustabri_ipafair.dylib"
+    lib_path = script_dir / "bin" / "libcrustabri_ipafair.so" # / libcrustabri_ipafair.dylib
 
     if not lib_path.exists():
         raise FileNotFoundError(
