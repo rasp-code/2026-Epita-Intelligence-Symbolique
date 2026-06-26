@@ -20,17 +20,6 @@ Stable        : conflict-free ∧ S⁺ = Args \\ S.
 
 import networkx as nx
 
-
-
-def is_complete(graph: nx.DiGraph, extension: set) -> bool:
-    """
-    Return True iff `extension` is a complete extension of `graph`.
-    """
-    S = frozenset(extension)
-    if not _is_admissible(graph, S):
-        return False
-    return _characteristic_function(graph, S) == S
-
 # ---------------------------------------------------------------------------
 # Shared AF helpers
 # ---------------------------------------------------------------------------
@@ -165,74 +154,3 @@ def is_grounded(graph: nx.DiGraph, extension: set) -> bool:
     Complexity: O(n² + nm)  — at most n iterations of F_AF, each O(n+m).
     """
     return frozenset(extension) == _grounded_extension(graph)
-
-
-# ---------------------------------------------------------------------------
-# Self-tests
-# ---------------------------------------------------------------------------
-
-if __name__ == "__main__":
-    def check(label, got, expected):
-        mark = "✓" if got == expected else "✗"
-        print(f"  {mark} {label}: {got}  (expected {expected})")
-
-    # ── AF1: no attacks ─────────────────────────────────────────────────
-    print("\nAF1 — no attacks {a, b, c}")
-    g = nx.DiGraph()
-    g.add_nodes_from(["a", "b", "c"])
-    check("is_grounded ({a,b,c})",  is_grounded(g,  {"a","b","c"}), True)
-    check("is_preferred({a,b,c})",  is_preferred(g, {"a","b","c"}), True)
-    check("is_stable   ({a,b,c})",  is_stable(g,    {"a","b","c"}), True)
-    check("is_grounded ({})",        is_grounded(g,  set()),          False)
-    check("is_preferred({})",        is_preferred(g, set()),          False)
-
-    # ── AF2: even cycle a ↔ b ───────────────────────────────────────────
-    print("\nAF2 — even cycle a ↔ b")
-    g = nx.DiGraph()
-    g.add_edges_from([("a","b"),("b","a")])
-    check("is_grounded ({})",   is_grounded(g,  set()),   True)
-    check("is_grounded ({a})",  is_grounded(g,  {"a"}),   False)
-    check("is_preferred({a})",  is_preferred(g, {"a"}),   True)
-    check("is_preferred({b})",  is_preferred(g, {"b"}),   True)
-    check("is_preferred({})",   is_preferred(g, set()),   False)
-    check("is_stable   ({a})",  is_stable(g,    {"a"}),   True)
-    check("is_stable   ({b})",  is_stable(g,    {"b"}),   True)
-    check("is_stable   ({})",   is_stable(g,    set()),   False)
-
-    # ── AF3: odd cycle a→b→c→a ──────────────────────────────────────────
-    print("\nAF3 — odd cycle a→b→c→a (no stable extension)")
-    g = nx.DiGraph()
-    g.add_edges_from([("a","b"),("b","c"),("c","a")])
-    check("is_grounded ({})",        is_grounded(g,  set()),          True)
-    check("is_stable   ({a})",       is_stable(g,    {"a"}),          False)
-    check("is_stable   ({a,b,c})",   is_stable(g,    {"a","b","c"}),  False)
-
-    # ── AF4: Nixon diamond a↔b, b↔c ─────────────────────────────────────
-    print("\nAF4 — Nixon diamond: a↔b, b↔c")
-    g = nx.DiGraph()
-    g.add_edges_from([("a","b"),("b","a"),("b","c"),("c","b")])
-    check("is_grounded ({})",      is_grounded(g,  set()),       True)
-    check("is_preferred({a,c})",   is_preferred(g, {"a","c"}),   True)
-    check("is_preferred({b})",     is_preferred(g, {"b"}),       True)
-    check("is_preferred({})",      is_preferred(g, set()),       False)
-    check("is_stable   ({a,c})",   is_stable(g,    {"a","c"}),   True)
-    check("is_stable   ({b})",     is_stable(g,    {"b"}),       True)
-
-    # ── AF5: chain a→b→c ────────────────────────────────────────────────
-    print("\nAF5 — chain a→b→c")
-    g = nx.DiGraph()
-    g.add_edges_from([("a","b"),("b","c")])
-    check("is_grounded ({a,c})",   is_grounded(g,  {"a","c"}),  True)
-    check("is_preferred({a,c})",   is_preferred(g, {"a","c"}),  True)
-    check("is_stable   ({a,c})",   is_stable(g,    {"a","c"}),  True)
-    check("is_grounded ({a})",     is_grounded(g,  {"a"}),      False)
-    check("is_preferred({a})",     is_preferred(g, {"a"}),      False)
-
-    # ── AF6: self-attack a→a ─────────────────────────────────────────────
-    print("\nAF6 — self-attack a→a")
-    g = nx.DiGraph()
-    g.add_edge("a","a")
-    check("is_grounded ({})",   is_grounded(g,  set()),  True)
-    check("is_preferred({})",   is_preferred(g, set()),  True)
-    check("is_stable   ({})",   is_stable(g,    set()),  False)  # a not attacked
-
